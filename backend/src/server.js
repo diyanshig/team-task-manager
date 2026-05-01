@@ -4,7 +4,6 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-const path = require("path");
 
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
@@ -14,7 +13,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
-// Database connection
+// Connect DB
 connectDB();
 
 // Middlewares
@@ -22,15 +21,13 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 
-// Allowed frontend origins
+// CORS
 const allowedOrigins = [
   "https://team-task-manager-production-cc91.up.railway.app"
 ];
 
-// CORS config
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow Postman / server requests without origin
     if (!origin) {
       return callback(null, true);
     }
@@ -62,10 +59,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// FIXED for Express 5
-app.options("/(.*)", cors(corsOptions));
-
-// API routes
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
@@ -76,29 +70,6 @@ app.get("/api/health", (req, res) => {
   res.json({
     message: "API is running successfully"
   });
-});
-
-// Static frontend
-const __dirnamePath = path.resolve();
-
-app.use(
-  express.static(
-    path.join(
-      __dirnamePath,
-      "frontend/dist"
-    )
-  )
-);
-
-// FIXED for Express 5
-app.get("/(.*)", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirnamePath,
-      "frontend/dist",
-      "index.html"
-    )
-  );
 });
 
 // Start server
