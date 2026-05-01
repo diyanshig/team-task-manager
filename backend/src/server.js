@@ -14,7 +14,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
-// Connect database
+// Database connection
 connectDB();
 
 // Middlewares
@@ -22,14 +22,15 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 
-// CORS
+// Allowed frontend origins
 const allowedOrigins = [
   "https://team-task-manager-production-cc91.up.railway.app"
 ];
 
+// CORS config
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow Postman / server-to-server requests
+    // Allow Postman / server requests without origin
     if (!origin) {
       return callback(null, true);
     }
@@ -38,18 +39,31 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    return callback(new Error("Not allowed by CORS"));
+    return callback(
+      new Error("Not allowed by CORS")
+    );
   },
 
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "OPTIONS"
+  ],
+
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization"
+  ],
+
   credentials: true
 };
 
 app.use(cors(corsOptions));
 
-// FIXED: no Express wildcard crash
-app.options("/*", cors(corsOptions));
+// FIXED for Express 5
+app.options("/(.*)", cors(corsOptions));
 
 // API routes
 app.use("/api/auth", authRoutes);
@@ -69,12 +83,15 @@ const __dirnamePath = path.resolve();
 
 app.use(
   express.static(
-    path.join(__dirnamePath, "frontend/dist")
+    path.join(
+      __dirnamePath,
+      "frontend/dist"
+    )
   )
 );
 
-// FIXED: no Express wildcard crash
-app.get("/*", (req, res) => {
+// FIXED for Express 5
+app.get("/(.*)", (req, res) => {
   res.sendFile(
     path.join(
       __dirnamePath,
@@ -85,7 +102,8 @@ app.get("/*", (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT =
+  process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(
