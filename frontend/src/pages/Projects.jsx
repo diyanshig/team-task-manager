@@ -6,16 +6,10 @@ const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
 
   const fetchProjects = async () => {
-    try {
-      const { data } = await api.get("/api/projects");
-      setProjects(data);
-    } catch (err) {
-      setError("Failed to load projects");
-    }
+    const { data } = await api.get("/api/projects");
+    setProjects(data);
   };
 
   useEffect(() => {
@@ -24,65 +18,65 @@ const Projects = () => {
 
   const createProject = async (e) => {
     e.preventDefault();
-    setError("");
-    setMessage("");
 
-    try {
-      await api.post("/api/projects", {
-        name,
-        description
-      });
+    await api.post("/api/projects", {
+      name,
+      description
+    });
 
-      setName("");
-      setDescription("");
-      setMessage("Project created successfully");
-
-      fetchProjects();
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to create project");
-    }
+    setName("");
+    setDescription("");
+    fetchProjects();
   };
 
   return (
     <div className="container">
-      <h2>My Projects</h2>
+      <h2>Projects</h2>
 
-      {message && <p className="success">{message}</p>}
-      {error && <p className="error">{error}</p>}
-
+      {/* CREATE PROJECT */}
       <div className="card">
         <h3>Create Project</h3>
 
-        <form className="form" onSubmit={createProject}>
+        <form onSubmit={createProject} className="form">
           <input
-            type="text"
             placeholder="Project Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
 
-          <textarea
-            placeholder="Project Description"
+          <input
+            placeholder="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
 
-          <button type="submit">Create Project</button>
+          <button type="submit">Create</button>
         </form>
       </div>
 
+      {/* PROJECT LIST */}
       <div className="card">
-        <h3>Projects List</h3>
-
-        {projects.length === 0 && <p>No projects found.</p>}
+        <h3>All Projects</h3>
 
         {projects.map((project) => (
-          <div key={project._id} className="task-card">
+          <div key={project._id} style={{
+            border: "1px solid #ddd",
+            padding: "10px",
+            marginBottom: "10px"
+          }}>
             <h4>{project.name}</h4>
             <p>{project.description}</p>
 
+            <p><b>Members:</b> {project.members?.length}</p>
+
             <Link to={`/projects/${project._id}`}>
               <button>Open Project</button>
+            </Link>
+
+            <Link to={`/projects/${project._id}/dashboard`}>
+              <button style={{ marginLeft: "10px" }}>
+                View Dashboard
+              </button>
             </Link>
           </div>
         ))}

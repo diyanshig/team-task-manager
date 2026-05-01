@@ -11,13 +11,11 @@ const Navbar = () => {
       padding: "10px 20px",
       borderBottom: "1px solid #ddd"
     }}>
-      <Link to="/projects">Home</Link>
+      <Link to="/projects">Projects</Link>
 
       <div style={{ display: "flex", gap: "10px" }}>
         {user ? (
           <>
-            <Link to="/projects">Projects</Link>
-            <Link to="/projects">Dashboard</Link>
             <button onClick={logout}>Logout</button>
           </>
         ) : (
