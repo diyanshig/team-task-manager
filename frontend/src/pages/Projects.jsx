@@ -1,24 +1,20 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api/axios";
-import { useAuth } from "../context/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
 
 const Projects = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
   const [projects, setProjects] = useState([]);
-  const [form, setForm] = useState({
-    name: "",
-    description: ""
-  });
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const fetchProjects = async () => {
     try {
       const { data } = await api.get("/api/projects");
       setProjects(data);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
+    } catch (err) {
+      setError("Failed to load projects");
     }
   };
 
@@ -28,117 +24,70 @@ const Projects = () => {
 
   const createProject = async (e) => {
     e.preventDefault();
+    setError("");
+    setMessage("");
 
     try {
-      await api.post("/api/projects", form);
-
-      setForm({
-        name: "",
-        description: ""
+      await api.post("/api/projects", {
+        name,
+        description
       });
 
+      setName("");
+      setDescription("");
+      setMessage("Project created successfully");
+
       fetchProjects();
-    } catch (error) {
-      console.error("Error creating project:", error);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to create project");
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
   return (
-    <>
-      <div className="navbar">
-        <strong>Team Task Manager</strong>
+    <div className="container">
+      <h2>My Projects</h2>
 
-        <div>
-          <span style={{ marginRight: 12 }}>
-            {user?.name}
-          </span>
+      {message && <p className="success">{message}</p>}
+      {error && <p className="error">{error}</p>}
 
-          <button onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
+      <div className="card">
+        <h3>Create Project</h3>
+
+        <form className="form" onSubmit={createProject}>
+          <input
+            type="text"
+            placeholder="Project Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+
+          <textarea
+            placeholder="Project Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+
+          <button type="submit">Create Project</button>
+        </form>
       </div>
 
-      <div className="container">
-        {/* CREATE PROJECT (ADMIN ONLY) */}
-        {user?.role === "admin" && (
-          <div className="card">
-            <h2>Create Project</h2>
+      <div className="card">
+        <h3>Projects List</h3>
 
-            <form className="form" onSubmit={createProject}>
-              <input
-                placeholder="Project name"
-                value={form.name}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    name: e.target.value
-                  })
-                }
-              />
+        {projects.length === 0 && <p>No projects found.</p>}
 
-              <textarea
-                placeholder="Project description"
-                value={form.description}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    description: e.target.value
-                  })
-                }
-              />
+        {projects.map((project) => (
+          <div key={project._id} className="task-card">
+            <h4>{project.name}</h4>
+            <p>{project.description}</p>
 
-              <button type="submit">
-                Create Project
-              </button>
-            </form>
+            <Link to={`/projects/${project._id}`}>
+              <button>Open Project</button>
+            </Link>
           </div>
-        )}
-
-        {/* MY PROJECTS */}
-        <div className="card">
-          <h2>My Projects</h2>
-
-          {projects.length === 0 && (
-            <p>No projects found.</p>
-          )}
-
-          {projects.map((project) => (
-            <div
-              className="project-card"
-              key={project._id}
-            >
-              <h3>{project.name}</h3>
-
-              <p>{project.description}</p>
-
-              <p>
-                Members: {project.members.length}
-              </p>
-
-              
-              <Link to={`/projects/${project._id}`}>
-                <button>
-                  Open Project
-                </button>
-              </Link>
-
-              
-              <Link to={`/projects/${project._id}/dashboard`}>
-                <button style={{ marginLeft: "10px" }}>
-                  Dashboard
-                </button>
-              </Link>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
-    </>
+    </div>
   );
 };
 
