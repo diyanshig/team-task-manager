@@ -12,16 +12,28 @@ const Login = () => {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // ✅ added
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
-      await login(form.email, form.password);
-      navigate("/projects");
+      const res = await login(form.email, form.password);
+
+      console.log("LOGIN SUCCESS:", res); // ✅ debug
+
+      // ✅ ensure navigation happens AFTER login is set
+      setTimeout(() => {
+        navigate("/projects"); // your dashboard route
+      }, 100);
+
     } catch (err) {
+      console.error(err);
       setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,7 +69,9 @@ const Login = () => {
             }
           />
 
-          <button type="submit">Login</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
         </form>
 
         <p>
