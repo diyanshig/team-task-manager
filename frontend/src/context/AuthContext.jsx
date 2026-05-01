@@ -7,7 +7,9 @@ const getSavedUser = () => {
   try {
     const savedUser = localStorage.getItem("user");
 
-    if (!savedUser || savedUser === "undefined") {
+    if (!savedUser || savedUser === "undefined" || savedUser === "null") {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
       return null;
     }
 
