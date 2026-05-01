@@ -3,7 +3,7 @@ import api from "../api/axios";
 
 const AuthContext = createContext();
 
-// ✅ Safe parser (prevents "undefined" crash)
+
 const getSavedUser = () => {
   try {
     const savedUser = localStorage.getItem("user");
@@ -30,7 +30,7 @@ const getSavedUser = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(getSavedUser);
 
-  // ✅ LOGIN
+  
   const login = async (email, password) => {
     try {
       const { data } = await api.post("/api/auth/login", {
@@ -40,30 +40,35 @@ export const AuthProvider = ({ children }) => {
 
       console.log("LOGIN RESPONSE:", data);
 
-      // ✅ Save user safely
       if (data?.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        setUser(data.user);
+        // 🔥 FIX: Normalize user structure
+        const normalizedUser = {
+          ...data.user,
+          _id: data.user._id || data.user.id, // FIX ID ISSUE
+          role: data.user.role?.toLowerCase() // FIX ROLE CONSISTENCY
+        };
+
+        localStorage.setItem("user", JSON.stringify(normalizedUser));
+        setUser(normalizedUser);
       } else {
         localStorage.removeItem("user");
         setUser(null);
       }
 
-      // ✅ Save token safely
       if (data?.token) {
         localStorage.setItem("token", data.token);
       } else {
         localStorage.removeItem("token");
       }
 
-      return data; // ✅ VERY IMPORTANT
+      return data;
     } catch (error) {
       console.error("Login error:", error);
       throw error;
     }
   };
 
-  // ✅ SIGNUP
+  
   const signup = async (name, email, password) => {
     try {
       const { data } = await api.post("/api/auth/signup", {
@@ -73,8 +78,15 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (data?.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        setUser(data.user);
+        // 🔥 FIX: Normalize user structure
+        const normalizedUser = {
+          ...data.user,
+          _id: data.user._id || data.user.id,
+          role: data.user.role?.toLowerCase()
+        };
+
+        localStorage.setItem("user", JSON.stringify(normalizedUser));
+        setUser(normalizedUser);
       }
 
       if (data?.token) {
@@ -88,7 +100,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ LOGOUT
+  
   const logout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
@@ -102,7 +114,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// ✅ Custom hook
+
 export const useAuth = () => {
   return useContext(AuthContext);
 };

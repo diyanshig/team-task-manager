@@ -22,13 +22,21 @@ const ProjectDetails = () => {
   });
 
   const fetchProject = async () => {
-    const { data } = await api.get(`/api/projects/${projectId}`);
-    setProject(data);
+    try {
+      const { data } = await api.get(`/api/projects/${projectId}`);
+      setProject(data);
+    } catch (err) {
+      setError("Failed to load project");
+    }
   };
 
   const fetchTasks = async () => {
-    const { data } = await api.get(`/api/tasks/project/${projectId}`);
-    setTasks(data);
+    try {
+      const { data } = await api.get(`/api/tasks/project/${projectId}`);
+      setTasks(data);
+    } catch (err) {
+      setError("Failed to load tasks");
+    }
   };
 
   useEffect(() => {
@@ -36,15 +44,19 @@ const ProjectDetails = () => {
     fetchTasks();
   }, [projectId]);
 
-  if (!project) {
+  if (!project || !user) {
     return <div className="container">Loading...</div>;
   }
 
-  const currentMember = project.members.find(
-    (member) => member.user._id === user.id
+  // 🔥 FIXED: safe user matching
+  const currentMember = project?.members?.find(
+    (member) =>
+      member?.user?._id === user?._id
   );
 
-  const isAdmin = currentMember?.role === "Admin";
+  // 🔥 FIXED: safe admin check
+  const isAdmin =
+    currentMember?.role?.toLowerCase() === "admin";
 
   const addMember = async (e) => {
     e.preventDefault();
@@ -89,27 +101,21 @@ const ProjectDetails = () => {
   };
 
   const updateStatus = async (taskId, status) => {
-    setMessage("");
-    setError("");
-
     try {
       await api.patch(`/api/tasks/${taskId}/status`, { status });
       fetchTasks();
     } catch (err) {
-      setError(err.response?.data?.message || "Could not update status");
+      setError("Could not update status");
     }
   };
 
   const deleteTask = async (taskId) => {
-    setMessage("");
-    setError("");
-
     try {
       await api.delete(`/api/tasks/${taskId}`);
       setMessage("Task deleted");
       fetchTasks();
     } catch (err) {
-      setError(err.response?.data?.message || "Could not delete task");
+      setError("Could not delete task");
     }
   };
 
@@ -122,8 +128,10 @@ const ProjectDetails = () => {
       <div className="card">
         <h2>{project.name}</h2>
         <p>{project.description}</p>
+
         <p>
-          Your role: <strong>{currentMember?.role}</strong>
+          Your role:{" "}
+          <strong>{currentMember?.role || "Not assigned"}</strong>
         </p>
 
         <Link to={`/projects/${projectId}/dashboard`}>
@@ -134,17 +142,19 @@ const ProjectDetails = () => {
       {message && <p className="success">{message}</p>}
       {error && <p className="error">{error}</p>}
 
+      {/* MEMBERS */}
       <div className="card">
         <h3>Members</h3>
 
-        {project.members.map((member) => (
-          <p key={member.user._id}>
-            {member.user.name} - {member.user.email}{" "}
-            <span className="badge">{member.role}</span>
+        {project?.members?.map((member) => (
+          <p key={member?.user?._id}>
+            {member?.user?.name} - {member?.user?.email}{" "}
+            <span className="badge">{member?.role}</span>
           </p>
         ))}
       </div>
 
+      {/* ADD MEMBER */}
       {isAdmin && (
         <div className="card">
           <h3>Add Member</h3>
@@ -156,12 +166,12 @@ const ProjectDetails = () => {
               value={memberEmail}
               onChange={(e) => setMemberEmail(e.target.value)}
             />
-
             <button type="submit">Add Member</button>
           </form>
         </div>
       )}
 
+      {/* CREATE TASK */}
       {isAdmin && (
         <div className="card">
           <h3>Create Task</h3>
@@ -209,9 +219,12 @@ const ProjectDetails = () => {
               }
             >
               <option value="">Assign to user</option>
-              {project.members.map((member) => (
-                <option key={member.user._id} value={member.user._id}>
-                  {member.user.name} - {member.user.email}
+              {project?.members?.map((member) => (
+                <option
+                  key={member?.user?._id}
+                  value={member?.user?._id}
+                >
+                  {member?.user?.name} - {member?.user?.email}
                 </option>
               ))}
             </select>
@@ -221,30 +234,34 @@ const ProjectDetails = () => {
         </div>
       )}
 
+      {/* TASK LIST */}
       <div className="card">
         <h3>Tasks</h3>
 
         {tasks.length === 0 && <p>No tasks found.</p>}
 
         {tasks.map((task) => (
-          <div className="task-card" key={task._id}>
-            <h4>{task.title}</h4>
-            <p>{task.description}</p>
+          <div className="task-card" key={task?._id}>
+            <h4>{task?.title}</h4>
+            <p>{task?.description}</p>
 
             <p>
-              <span className={`badge ${task.priority.toLowerCase()}`}>
-                {task.priority}
+              <span className={`badge ${task?.priority?.toLowerCase()}`}>
+                {task?.priority}
               </span>
-              <span className="badge">{task.status}</span>
+              <span className="badge">{task?.status}</span>
             </p>
 
             <p>
-              <strong>Assigned To:</strong> {task.assignedTo?.name}
+              <strong>Assigned To:</strong>{" "}
+              {task?.assignedTo?.name || "Unassigned"}
             </p>
 
             <p>
               <strong>Due Date:</strong>{" "}
-              {new Date(task.dueDate).toLocaleDateString()}
+              {task?.dueDate
+                ? new Date(task.dueDate).toLocaleDateString()
+                : "N/A"}
             </p>
 
             <select
