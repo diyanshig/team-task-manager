@@ -1,13 +1,11 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api/axios";
 
 const AuthContext = createContext();
 
-
 const getSavedUser = () => {
   try {
     const savedUser = localStorage.getItem("user");
-
     if (!savedUser) return null;
 
     const trimmed = savedUser.trim();
@@ -20,7 +18,6 @@ const getSavedUser = () => {
 
     return JSON.parse(trimmed);
   } catch (error) {
-    console.error("Error parsing user:", error);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     return null;
@@ -28,79 +25,53 @@ const getSavedUser = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(getSavedUser);
+  const [user, setUser] = useState(() => getSavedUser());
+  const [loading, setLoading] = useState(true);
 
-  
+  useEffect(() => {
+    setUser(getSavedUser());
+    setLoading(false);
+  }, []);
+
   const login = async (email, password) => {
-    try {
-      const { data } = await api.post("/api/auth/login", {
-        email,
-        password
-      });
+    const { data } = await api.post("/api/auth/login", {
+      email,
+      password
+    });
 
-      console.log("LOGIN RESPONSE:", data);
+    const normalizedUser = {
+      ...data.user,
+      _id: data.user._id || data.user.id
+    };
 
-      if (data?.user) {
-        // 🔥 FIX: Normalize user structure
-        const normalizedUser = {
-          ...data.user,
-          _id: data.user._id || data.user.id, // FIX ID ISSUE
-          role: data.user.role?.toLowerCase() // FIX ROLE CONSISTENCY
-        };
+    localStorage.setItem("user", JSON.stringify(normalizedUser));
+    localStorage.setItem("token", data.token);
 
-        localStorage.setItem("user", JSON.stringify(normalizedUser));
-        setUser(normalizedUser);
-      } else {
-        localStorage.removeItem("user");
-        setUser(null);
-      }
+    setUser(normalizedUser);
 
-      if (data?.token) {
-        localStorage.setItem("token", data.token);
-      } else {
-        localStorage.removeItem("token");
-      }
-
-      return data;
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error;
-    }
+    return data;
   };
 
-  
   const signup = async (name, email, password) => {
-    try {
-      const { data } = await api.post("/api/auth/signup", {
-        name,
-        email,
-        password
-      });
+    const { data } = await api.post("/api/auth/signup", {
+      name,
+      email,
+      password
+    });
 
-      if (data?.user) {
-        // 🔥 FIX: Normalize user structure
-        const normalizedUser = {
-          ...data.user,
-          _id: data.user._id || data.user.id,
-          role: data.user.role?.toLowerCase()
-        };
+    const normalizedUser = {
+      ...data.user,
+      _id: data.user._id || data.user.id
+    };
 
-        localStorage.setItem("user", JSON.stringify(normalizedUser));
-        setUser(normalizedUser);
-      }
+    localStorage.setItem("user", JSON.stringify(normalizedUser));
+    localStorage.setItem("token", data.token);
 
-      if (data?.token) {
-        localStorage.setItem("token", data.token);
-      }
+    setUser(normalizedUser);
 
-      return data;
-    } catch (error) {
-      console.error("Signup error:", error);
-      throw error;
-    }
+    return data;
   };
 
-  
   const logout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
@@ -108,13 +79,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);

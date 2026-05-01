@@ -12,7 +12,7 @@ const Login = () => {
   });
 
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,15 +22,10 @@ const Login = () => {
     try {
       const res = await login(form.email, form.password);
 
-      console.log("LOGIN SUCCESS:", res); 
+      console.log("LOGIN SUCCESS:", res);
 
-      
-      setTimeout(() => {
-        navigate("/projects"); 
-      }, 100);
-
+      navigate("/projects", { replace: true });
     } catch (err) {
-      console.error(err);
       setError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
@@ -50,10 +45,7 @@ const Login = () => {
             placeholder="Email"
             value={form.email}
             onChange={(e) =>
-              setForm({
-                ...form,
-                email: e.target.value
-              })
+              setForm({ ...form, email: e.target.value })
             }
           />
 
@@ -62,10 +54,7 @@ const Login = () => {
             placeholder="Password"
             value={form.password}
             onChange={(e) =>
-              setForm({
-                ...form,
-                password: e.target.value
-              })
+              setForm({ ...form, password: e.target.value })
             }
           />
 
