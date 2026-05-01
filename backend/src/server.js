@@ -21,7 +21,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "*",
+    origin: "https://team-task-manager-production-cc91.up.railway.app",
     credentials: true
   })
 );
