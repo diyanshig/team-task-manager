@@ -12,7 +12,6 @@ const generateToken = (id) => {
   });
 };
 
-// Signup
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -42,7 +41,7 @@ router.post("/signup", async (req, res) => {
     res.status(201).json({
       token: generateToken(user._id),
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email
       }
@@ -52,7 +51,6 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -76,7 +74,7 @@ router.post("/login", async (req, res) => {
     res.json({
       token: generateToken(user._id),
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email
       }
@@ -86,7 +84,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Logged-in user profile
 router.get("/me", protect, async (req, res) => {
   res.json(req.user);
 });

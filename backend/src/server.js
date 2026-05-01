@@ -13,36 +13,39 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
-// Connect DB
 connectDB();
 
-// Middlewares
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 
-
 app.use(
   cors({
-    origin: true, 
+    origin: "*",
     credentials: true
   })
 );
 
-// Routes
+app.use((req, res, next) => {
+  console.log("Incoming request:", req.method, req.url);
+  next();
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-// Health check
 app.get("/api/health", (req, res) => {
   res.json({
     message: "API is running successfully"
   });
 });
 
-// Start server
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
