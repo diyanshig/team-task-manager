@@ -14,63 +14,81 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
-// ✅ Connect DB
+// Connect database
 connectDB();
 
-// ✅ Middlewares
+// Middlewares
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 
-// ✅ CORS FIX (FINAL – handles Railway + browser preflight)
+// CORS
 const allowedOrigins = [
   "https://team-task-manager-production-cc91.up.railway.app"
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // allow requests without origin (Postman, mobile apps)
-      if (!origin) return callback(null, true);
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow Postman / server-to-server requests
+    if (!origin) {
+      return callback(null, true);
+    }
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true
-  })
-);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-// ✅ Handle preflight requests
-app.options("*", cors());
+    return callback(new Error("Not allowed by CORS"));
+  },
 
-// ✅ API ROUTES
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+
+// FIXED: no Express wildcard crash
+app.options("/*", cors(corsOptions));
+
+// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-// ✅ Test route
+// Health check
 app.get("/api/health", (req, res) => {
-  res.json({ message: "API is running successfully" });
+  res.json({
+    message: "API is running successfully"
+  });
 });
 
-// ✅ Serve frontend (optional but safe)
+// Static frontend
 const __dirnamePath = path.resolve();
-app.use(express.static(path.join(__dirnamePath, "frontend/dist")));
 
-// ✅ React fallback (IMPORTANT)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirnamePath, "frontend/dist", "index.html"));
+app.use(
+  express.static(
+    path.join(__dirnamePath, "frontend/dist")
+  )
+);
+
+// FIXED: no Express wildcard crash
+app.get("/*", (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirnamePath,
+      "frontend/dist",
+      "index.html"
+    )
+  );
 });
 
-// ✅ Start server
+// Start server
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(
+    `Server running on port ${PORT}`
+  );
 });
