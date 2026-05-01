@@ -14,8 +14,12 @@ const Projects = () => {
   });
 
   const fetchProjects = async () => {
-    const { data } = await api.get("/api/projects");
-    setProjects(data);
+    try {
+      const { data } = await api.get("/api/projects");
+      setProjects(data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
   };
 
   useEffect(() => {
@@ -25,14 +29,18 @@ const Projects = () => {
   const createProject = async (e) => {
     e.preventDefault();
 
-    await api.post("/api/projects", form);
+    try {
+      await api.post("/api/projects", form);
 
-    setForm({
-      name: "",
-      description: ""
-    });
+      setForm({
+        name: "",
+        description: ""
+      });
 
-    fetchProjects();
+      fetchProjects();
+    } catch (error) {
+      console.error("Error creating project:", error);
+    }
   };
 
   const handleLogout = () => {
@@ -44,13 +52,20 @@ const Projects = () => {
     <>
       <div className="navbar">
         <strong>Team Task Manager</strong>
+
         <div>
-          <span style={{ marginRight: 12 }}>{user?.name}</span>
-          <button onClick={handleLogout}>Logout</button>
+          <span style={{ marginRight: 12 }}>
+            {user?.name}
+          </span>
+
+          <button onClick={handleLogout}>
+            Logout
+          </button>
         </div>
       </div>
 
       <div className="container">
+        {/* CREATE PROJECT */}
         <div className="card">
           <h2>Create Project</h2>
 
@@ -58,34 +73,70 @@ const Projects = () => {
             <input
               placeholder="Project name"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  name: e.target.value
+                })
+              }
             />
 
             <textarea
               placeholder="Project description"
               value={form.description}
               onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
+                setForm({
+                  ...form,
+                  description: e.target.value
+                })
               }
             />
 
-            <button type="submit">Create Project</button>
+            <button type="submit">
+              Create Project
+            </button>
           </form>
         </div>
 
+        {/* MY PROJECTS */}
         <div className="card">
           <h2>My Projects</h2>
 
-          {projects.length === 0 && <p>No projects found.</p>}
+          {projects.length === 0 && (
+            <p>No projects found.</p>
+          )}
 
           {projects.map((project) => (
-            <div className="project-card" key={project._id}>
+            <div
+              className="project-card"
+              key={project._id}
+            >
               <h3>{project.name}</h3>
-              <p>{project.description}</p>
-              <p>Members: {project.members.length}</p>
 
+              <p>{project.description}</p>
+
+              <p>
+                Members: {project.members.length}
+              </p>
+
+              {/* Open Project */}
               <Link to={`/projects/${project._id}`}>
-                <button>Open Project</button>
+                <button>
+                  Open Project
+                </button>
+              </Link>
+
+              {/* Dashboard Button */}
+              <Link
+                to={`/dashboard/${project._id}`}
+              >
+                <button
+                  style={{
+                    marginLeft: "10px"
+                  }}
+                >
+                  Dashboard
+                </button>
               </Link>
             </div>
           ))}

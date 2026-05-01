@@ -1,0 +1,16 @@
+{
+  "name": "team-task-manager",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.4.5"
+  }
+}
