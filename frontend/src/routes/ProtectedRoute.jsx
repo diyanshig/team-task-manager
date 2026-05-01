@@ -9,7 +9,7 @@ const ProtectedRoute = ({ children }) => {
     return children;
   }
 
-  // If no user → redirect
+  
   return <Navigate to="/login" replace />;
 };
 

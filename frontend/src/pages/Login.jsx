@@ -12,7 +12,7 @@ const Login = () => {
   });
 
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // ✅ added
+  const [loading, setLoading] = useState(false); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,11 +22,11 @@ const Login = () => {
     try {
       const res = await login(form.email, form.password);
 
-      console.log("LOGIN SUCCESS:", res); // ✅ debug
+      console.log("LOGIN SUCCESS:", res); 
 
-      // ✅ ensure navigation happens AFTER login is set
+      
       setTimeout(() => {
-        navigate("/projects"); // your dashboard route
+        navigate("/projects"); 
       }, 100);
 
     } catch (err) {

@@ -121,14 +121,14 @@ const Projects = () => {
                 Members: {project.members.length}
               </p>
 
-              {/* Open Project */}
+              
               <Link to={`/projects/${project._id}`}>
                 <button>
                   Open Project
                 </button>
               </Link>
 
-              {/* ✅ FIXED Dashboard Button */}
+              
               <Link to={`/projects/${project._id}/dashboard`}>
                 <button style={{ marginLeft: "10px" }}>
                   Dashboard

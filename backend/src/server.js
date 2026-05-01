@@ -21,10 +21,10 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 
-// ✅ SIMPLE & SAFE CORS (works everywhere)
+
 app.use(
   cors({
-    origin: true, // allow all origins dynamically
+    origin: true, 
     credentials: true
   })
 );
