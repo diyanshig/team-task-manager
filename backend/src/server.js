@@ -21,26 +21,10 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 
-// ✅ CORS FIX (works for local + deployed)
-const allowedOrigins = [
-  "http://localhost:5173", // local frontend
-  "https://team-task-manager-production-cc91.up.railway.app" // deployed frontend
-];
-
+// ✅ SIMPLE & SAFE CORS (works everywhere)
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps, Postman)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(
-        new Error("Not allowed by CORS")
-      );
-    },
+    origin: true, // allow all origins dynamically
     credentials: true
   })
 );
