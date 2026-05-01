@@ -65,38 +65,40 @@ const Projects = () => {
       </div>
 
       <div className="container">
-        {/* CREATE PROJECT */}
-        <div className="card">
-          <h2>Create Project</h2>
+        {/* CREATE PROJECT (ADMIN ONLY) */}
+        {user?.role === "admin" && (
+          <div className="card">
+            <h2>Create Project</h2>
 
-          <form className="form" onSubmit={createProject}>
-            <input
-              placeholder="Project name"
-              value={form.name}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  name: e.target.value
-                })
-              }
-            />
+            <form className="form" onSubmit={createProject}>
+              <input
+                placeholder="Project name"
+                value={form.name}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    name: e.target.value
+                  })
+                }
+              />
 
-            <textarea
-              placeholder="Project description"
-              value={form.description}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  description: e.target.value
-                })
-              }
-            />
+              <textarea
+                placeholder="Project description"
+                value={form.description}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    description: e.target.value
+                  })
+                }
+              />
 
-            <button type="submit">
-              Create Project
-            </button>
-          </form>
-        </div>
+              <button type="submit">
+                Create Project
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* MY PROJECTS */}
         <div className="card">
@@ -126,15 +128,9 @@ const Projects = () => {
                 </button>
               </Link>
 
-              {/* Dashboard Button */}
-              <Link
-                to={`/dashboard/${project._id}`}
-              >
-                <button
-                  style={{
-                    marginLeft: "10px"
-                  }}
-                >
+              {/* ✅ FIXED Dashboard Button */}
+              <Link to={`/projects/${project._id}/dashboard`}>
+                <button style={{ marginLeft: "10px" }}>
                   Dashboard
                 </button>
               </Link>

@@ -21,43 +21,29 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 
-// CORS
+// ✅ CORS FIX (works for local + deployed)
 const allowedOrigins = [
-  "https://team-task-manager-production-cc91.up.railway.app"
+  "http://localhost:5173", // local frontend
+  "https://team-task-manager-production-cc91.up.railway.app" // deployed frontend
 ];
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) {
-      return callback(null, true);
-    }
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps, Postman)
+      if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
 
-    return callback(
-      new Error("Not allowed by CORS")
-    );
-  },
-
-  methods: [
-    "GET",
-    "POST",
-    "PUT",
-    "DELETE",
-    "OPTIONS"
-  ],
-
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization"
-  ],
-
-  credentials: true
-};
-
-app.use(cors(corsOptions));
+      return callback(
+        new Error("Not allowed by CORS")
+      );
+    },
+    credentials: true
+  })
+);
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -73,11 +59,8 @@ app.get("/api/health", (req, res) => {
 });
 
 // Start server
-const PORT =
-  process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(
-    `Server running on port ${PORT}`
-  );
+  console.log(`Server running on port ${PORT}`);
 });

@@ -1,11 +1,12 @@
 import axios from "axios";
 
+// ✅ Use environment variable (works for Railway + local)
 const api = axios.create({
-  baseURL: "https://team-task-manager-production-a40e.up.railway.app",
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true
 });
 
-// Send token automatically with every request
+// ✅ Attach token automatically
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
